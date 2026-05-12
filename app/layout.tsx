@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { GoogleAnalytics } from '@next/third-parties/google';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -66,6 +67,9 @@ export default function RootLayout({
           © {new Date().getFullYear()} Kick<span className="text-sports-red">live</span> — Premium Football Live Streaming
         </p>
       </footer>
+
+      {/* GOOGLE ANALYTICS IMPLEMENTATION */}
+      <GoogleAnalytics gaId="G-MZ6SWYB1RF" />
       </body>
       </html>
   );
