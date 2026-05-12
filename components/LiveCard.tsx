@@ -1,46 +1,70 @@
 // components/LiveCard.tsx
 import Link from 'next/link';
-import { StreamEmbed } from '@/types/stream';
+import { APIMatch } from '@/types/stream';
+import { getMatchImage } from '@/lib/api';
 
-export const LiveCard = ({ stream }: { stream: StreamEmbed }) => {
+export const LiveCard = ({ match }: { match: APIMatch }) => {
+    // 1. Get the main background using the proxy route
+    const mainPoster = getMatchImage('proxy', match.poster || "");
+
+    // 2. Get individual team badges for the vs overlay
+    const homeBadge = match.teams?.home?.badge
+        ? getMatchImage('badge', match.teams.home.badge)
+        : null;
+    const awayBadge = match.teams?.away?.badge
+        ? getMatchImage('badge', match.teams.away.badge)
+        : null;
+
     return (
-        <Link href={`/watch/${stream.id}`}>
-    <div className="group relative aspect-video overflow-hidden rounded-2xl bg-zinc-900 border border-white/5 transition-all hover:border-red-600/50 hover:scale-[1.02]">
-        {/* Poster Image */}
-        <img
-    src={stream.poster}
-    className="h-full w-full object-cover opacity-50 group-hover:opacity-80 transition-opacity duration-500"
-    alt={stream.title || "Match Poster"}
-    />
+        <Link href={`/watch/${match.id}`}>
+            <div className="group relative aspect-video overflow-hidden rounded-2xl bg-zinc-900 border border-white/5 transition-all hover:border-sports-red/50 hover:shadow-glow hover:scale-[1.02]">
 
-    {/* Gradient Overlay */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                {/* Main Proxied Poster */}
+                <img
+                    src={mainPoster}
+                    className="h-full w-full object-cover opacity-40 group-hover:opacity-60 transition-all duration-700"
+                    alt={match.title}
+                    loading="lazy"
+                />
 
-        {/* Status Badges */}
-        <div className="absolute top-4 left-4 flex gap-2">
-    <div className="flex items-center gap-1.5 bg-red-600 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-red-900/50 animate-pulse">
-    <span className="w-1.5 h-1.5 bg-white rounded-full" />
-        Live
-        </div>
-    {stream.hd && (
-        <div className="bg-white/10 backdrop-blur-md border border-white/10 px-2 py-1 rounded-md text-[10px] font-bold text-zinc-300 uppercase">
-            HD
+                {/* VS Badge Overlay */}
+                {homeBadge && awayBadge && (
+                    <div className="absolute inset-0 flex items-center justify-center gap-8 group-hover:scale-105 transition-transform duration-500">
+                        <img src={homeBadge} className="w-12 h-12 object-contain drop-shadow-2xl" alt="home" />
+                        <span className="text-white/10 font-black italic text-2xl uppercase italic">vs</span>
+                        <img src={awayBadge} className="w-12 h-12 object-contain drop-shadow-2xl" alt="away" />
+                    </div>
+                )}
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+
+                {/* Status Indicators */}
+                <div className="absolute top-4 left-4 flex gap-2">
+                    {match.date === 0 ? (
+                        <div className="bg-sports-red px-2 py-1 rounded text-[8px] font-black uppercase tracking-[0.2em] text-white animate-pulse">
+                            Live 24/7
+                        </div>
+                    ) : (
+                        <div className="bg-white/10 backdrop-blur-md px-2 py-1 rounded text-[8px] font-black uppercase tracking-[0.2em] text-zinc-300">
+                            Scheduled
+                        </div>
+                    )}
+                </div>
+
+                {/* Info Section */}
+                <div className="absolute bottom-4 left-4 right-4">
+                    <p className="text-[9px] font-bold text-sports-red uppercase tracking-widest mb-1">
+                        {match.category}
+                    </p>
+                    <h3 className="text-sm font-bold text-white truncate group-hover:text-sports-red transition-colors">
+                        {match.title}
+                    </h3>
+                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/5 text-[9px] font-bold text-zinc-500 uppercase">
+                        <span>{match.sources.length} Sources</span>
+                        <span>{match.date > 0 ? new Date(match.date).toLocaleTimeString() : 'Online'}</span>
+                    </div>
+                </div>
             </div>
-    )}
-    </div>
-
-    {/* Info Area */}
-    <div className="absolute bottom-4 left-4 right-4">
-    <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">{stream.category}</span>
-        <h3 className="text-lg font-bold text-white truncate leading-tight mt-1">
-        {stream.title}
-        </h3>
-        <div className="flex items-center justify-between mt-2 text-[11px] text-zinc-400 font-medium">
-        <span>{stream.language}</span>
-        <span>{stream.viewers.toLocaleString()} Viewers</span>
-    </div>
-    </div>
-    </div>
-    </Link>
-);
+        </Link>
+    );
 };
